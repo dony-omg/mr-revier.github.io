@@ -295,7 +295,7 @@
   <h1>AI Code Review<br/>cho GitLab MR</h1>
   <p>Tự động review Merge Request bằng Claude Pro hoặc Codex — post comment thẳng lên GitLab, hỗ trợ inline comment trên từng dòng code.</p>
   <div class="hero-actions">
-    <a class="btn btn-primary" href="https://gitlab.kyanon.digital/shiva/tool/mr-reviewer" target="_blank">
+    <a class="btn btn-primary" href="https://gitlab.kyanon.digital/kd-community/mr-reviewer" target="_blank">
       📦 Xem source
     </a>
     <a class="btn btn-secondary" href="#setup">
@@ -504,13 +504,13 @@
         <p><strong>macOS / Linux:</strong></p>
         <div class="code-block">
           <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-          curl -s -H "PRIVATE-TOKEN: &lt;your-gitlab-token&gt;" "https://gitlab.kyanon.digital/api/v4/projects/shiva%2Ftool%2Fmr-reviewer/repository/files/setup.sh/raw?ref=main" -o /tmp/mr-setup.sh &amp;&amp; bash /tmp/mr-setup.sh
+          curl -s -H "PRIVATE-TOKEN: &lt;your-gitlab-token&gt;" "https://gitlab.kyanon.digital/api/v4/projects/kd-community%2Fmr-reviewer/repository/files/setup.sh/raw?ref=main" -o /tmp/mr-setup.sh &amp;&amp; bash /tmp/mr-setup.sh
         </div>
         <br/>
         <p><strong>Windows (PowerShell):</strong></p>
         <div class="code-block">
           <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-          $token="&lt;your-gitlab-token&gt;"; Invoke-WebRequest -Headers @{"PRIVATE-TOKEN"=$token} "https://gitlab.kyanon.digital/api/v4/projects/shiva%2Ftool%2Fmr-reviewer/repository/files/setup.ps1/raw?ref=main" -OutFile "$env:TEMP\setup.ps1"; &amp; "$env:TEMP\setup.ps1"
+          $token="&lt;your-gitlab-token&gt;"; Invoke-WebRequest -Headers @{"PRIVATE-TOKEN"=$token} "https://gitlab.kyanon.digital/api/v4/projects/kd-community%2Fmr-reviewer/repository/files/setup.ps1/raw?ref=main" -OutFile "$env:TEMP\setup.ps1"; &amp; "$env:TEMP\setup.ps1"
         </div>
       </div>
     </div>
@@ -528,7 +528,7 @@
         <p><strong>Hoặc dùng npx (không cần cài):</strong></p>
         <div class="code-block">
           <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-          npx @shiva/mr-reviewer https://gitlab.kyanon.digital/group/project/-/merge_requests/123
+          npx @kd-community/mr-reviewer https://gitlab.kyanon.digital/group/project/-/merge_requests/123
         </div>
       </div>
     </div>
@@ -539,8 +539,8 @@
 <hr class="divider"/>
 
 <footer>
-  <p>Được xây dựng bởi team <strong>Shiva / Kyanon Digital</strong> &nbsp;·&nbsp;
-    <a href="https://gitlab.kyanon.digital/shiva/tool/mr-reviewer" target="_blank">GitLab</a>
+  <p>Được xây dựng bởi team <strong>KD Community / Kyanon Digital</strong> &nbsp;·&nbsp;
+    <a href="https://gitlab.kyanon.digital/kd-community/mr-reviewer" target="_blank">GitLab</a>
   </p>
 </footer>
 
