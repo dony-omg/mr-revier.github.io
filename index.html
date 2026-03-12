@@ -339,6 +339,72 @@
 
 <hr class="divider"/>
 
+<!-- ── Why AI ── -->
+<section class="section">
+  <h2 class="section-title">Tại sao dùng AI để review MR?</h2>
+  <p class="section-sub">Những vấn đề thực tế mà tool này giải quyết</p>
+
+  <div class="features" style="margin-bottom: 48px;">
+    <div class="feature-card" style="border-left: 3px solid var(--red);">
+      <div class="feature-icon">⏱️</div>
+      <h3>Review thủ công tốn thời gian</h3>
+      <p>Mỗi MR mất 15–30 phút chỉ để đọc diff, trong khi reviewer còn nhiều task khác. AI đọc toàn bộ diff trong vài giây.</p>
+    </div>
+    <div class="feature-card" style="border-left: 3px solid var(--orange);">
+      <div class="feature-icon">🕳️</div>
+      <h3>Dễ bỏ sót lỗi</h3>
+      <p>Sau nhiều MR liên tiếp, sự tập trung giảm. Bug nhỏ, security issue, logic sai hay bị bỏ qua. AI không bị mệt mỏi.</p>
+    </div>
+    <div class="feature-card" style="border-left: 3px solid var(--orange);">
+      <div class="feature-icon">🔀</div>
+      <h3>Feedback không nhất quán</h3>
+      <p>Mỗi reviewer có style khác nhau, gây khó khăn cho author. AI cho phản hồi theo cùng tiêu chí mỗi lần.</p>
+    </div>
+    <div class="feature-card" style="border-left: 3px solid var(--red);">
+      <div class="feature-icon">🚧</div>
+      <h3>Bottleneck khi team lớn</h3>
+      <p>Ít senior reviewer phải duyệt nhiều MR → MR tồn đọng, release chậm. AI review song song, không chờ người.</p>
+    </div>
+  </div>
+
+  <h3 style="text-align:center; margin-bottom: 24px; font-size: 1.1rem; color: var(--muted);">Claude vs Codex — chọn đúng công cụ</h3>
+  <div style="overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; font-size:14px;">
+      <thead>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <th style="padding:10px 16px; text-align:left; color:var(--muted); font-weight:600;"></th>
+          <th style="padding:10px 16px; text-align:left; color:var(--accent); font-weight:600;">Claude (claude-opus-4-6)</th>
+          <th style="padding:10px 16px; text-align:left; color:var(--green); font-weight:600;">Codex</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding:10px 16px; color:var(--muted);">Điểm mạnh</td>
+          <td style="padding:10px 16px;">Hiểu ngữ cảnh sâu, phân tích logic phức tạp, comment chi tiết</td>
+          <td style="padding:10px 16px;">Nhanh, miễn phí, phù hợp MR nhỏ</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding:10px 16px; color:var(--muted);">Inline comment</td>
+          <td style="padding:10px 16px; color:var(--green);">✅ Đúng dòng code có vấn đề</td>
+          <td style="padding:10px 16px; color:var(--muted);">❌ Chỉ tổng quan</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding:10px 16px; color:var(--muted);">Phân loại severity</td>
+          <td style="padding:10px 16px; color:var(--green);">✅ Critical / Warning / Suggestion</td>
+          <td style="padding:10px 16px; color:var(--green);">✅</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 16px; color:var(--muted);">Yêu cầu</td>
+          <td style="padding:10px 16px;">Claude Pro subscription</td>
+          <td style="padding:10px 16px;">Cài Codex (miễn phí)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="divider"/>
+
 <!-- ── Features ── -->
 <section class="section">
   <h2 class="section-title">Tính năng</h2>
@@ -427,6 +493,7 @@
       <div class="step-body">
         <h3>Tạo GitLab Personal Access Token</h3>
         <p>Vào <a href="https://gitlab.kyanon.digital/-/user_settings/personal_access_tokens" target="_blank">GitLab → Access Tokens</a>, tạo token với scope <strong>api</strong>. Copy token (dạng <code>glpat-...</code>).</p>
+        <p style="margin-top:10px">Tùy chọn: Cài <strong>Codex</strong> (miễn phí) — <a href="https://developers.openai.com/codex/app/windows/" target="_blank">Tải Codex cho Windows</a> hoặc <strong>Claude Code</strong> (Claude Pro) — <a href="https://claude.ai/download" target="_blank">Tải Claude Code</a>.</p>
       </div>
     </div>
 
@@ -437,13 +504,13 @@
         <p><strong>macOS / Linux:</strong></p>
         <div class="code-block">
           <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-          bash &lt;(curl -s https://gitlab.kyanon.digital/shiva/tool/mr-reviewer/-/raw/main/setup.sh)
+          curl -s -H "PRIVATE-TOKEN: &lt;your-gitlab-token&gt;" "https://gitlab.kyanon.digital/api/v4/projects/shiva%2Ftool%2Fmr-reviewer/repository/files/setup.sh/raw?ref=main" -o /tmp/mr-setup.sh &amp;&amp; bash /tmp/mr-setup.sh
         </div>
         <br/>
         <p><strong>Windows (PowerShell):</strong></p>
         <div class="code-block">
           <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-          powershell -ExecutionPolicy Bypass -Command "Invoke-WebRequest https://gitlab.kyanon.digital/shiva/tool/mr-reviewer/-/raw/main/setup.ps1 -OutFile $env:TEMP\setup.ps1; &amp; $env:TEMP\setup.ps1"
+          $token="&lt;your-gitlab-token&gt;"; Invoke-WebRequest -Headers @{"PRIVATE-TOKEN"=$token} "https://gitlab.kyanon.digital/api/v4/projects/shiva%2Ftool%2Fmr-reviewer/repository/files/setup.ps1/raw?ref=main" -OutFile "$env:TEMP\setup.ps1"; &amp; "$env:TEMP\setup.ps1"
         </div>
       </div>
     </div>
@@ -452,9 +519,16 @@
       <div class="step-num">3</div>
       <div class="step-body">
         <h3>Review MR đầu tiên</h3>
+        <p><strong>Nếu đã cài binary (sau setup script):</strong></p>
         <div class="code-block">
           <button class="copy-btn" onclick="copyCode(this)">Copy</button>
           mr-review https://gitlab.kyanon.digital/group/project/-/merge_requests/123
+        </div>
+        <br/>
+        <p><strong>Hoặc dùng npx (không cần cài):</strong></p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          npx @shiva/mr-reviewer https://gitlab.kyanon.digital/group/project/-/merge_requests/123
         </div>
       </div>
     </div>
