@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MR Reviewer — AI Code Review cho GitLab</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --bg2: #161b22;
+      --bg3: #21262d;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --accent2: #7c3aed;
+      --green: #3fb950;
+      --orange: #d29922;
+      --red: #f85149;
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 60px;
+      background: linear-gradient(180deg, #1a1f2e 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #e6edf3 0%, #58a6ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 560px;
+      margin: 0 auto 36px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity .15s, transform .15s;
+    }
+    .btn:hover { opacity: .85; transform: translateY(-1px); text-decoration: none; }
+
+    .btn-primary { background: var(--accent); color: #0d1117; }
+    .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+
+    /* ── Demo terminal ── */
+    .demo {
+      max-width: 700px;
+      margin: 60px auto;
+      padding: 0 24px;
+    }
+
+    .terminal {
+      background: #010409;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .terminal-bar {
+      background: var(--bg3);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-red { background: #ff5f57; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #28c840; }
+
+    .terminal-title { margin-left: 8px; font-size: 13px; color: var(--muted); }
+
+    .terminal-body {
+      padding: 20px 24px;
+      font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .t-prompt { color: var(--green); }
+    .t-cmd { color: var(--text); }
+    .t-out { color: var(--muted); }
+    .t-success { color: var(--green); }
+    .t-warn { color: var(--orange); }
+    .t-link { color: var(--accent); }
+    .t-setup { color: #e3b341; }
+
+    /* ── Features ── */
+    .section {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 60px 24px;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .section-sub {
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 48px;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      transition: border-color .2s;
+    }
+    .feature-card:hover { border-color: var(--accent); }
+
+    .feature-icon { font-size: 2rem; margin-bottom: 14px; }
+    .feature-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; }
+    .feature-card p { color: var(--muted); font-size: 14px; }
+
+    /* ── Setup steps ── */
+    .steps { display: flex; flex-direction: column; gap: 24px; max-width: 680px; margin: 0 auto; }
+
+    .step {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent2);
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .step-body h3 { font-size: 1rem; font-weight: 600; margin-bottom: 6px; }
+    .step-body p { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
+
+    .code-block {
+      background: #010409;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+      font-size: 13px;
+      color: var(--text);
+      overflow-x: auto;
+      position: relative;
+    }
+
+    .code-block .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: color .15s;
+    }
+    .code-block .copy-btn:hover { color: var(--text); }
+
+    /* ── Comment examples ── */
+    .comments { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+
+    .comment-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .comment-header {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-red { background: rgba(248,81,73,.15); color: #f85149; border: 1px solid rgba(248,81,73,.3); }
+    .badge-orange { background: rgba(210,153,34,.15); color: #d29922; border: 1px solid rgba(210,153,34,.3); }
+    .badge-blue { background: rgba(88,166,255,.15); color: #58a6ff; border: 1px solid rgba(88,166,255,.3); }
+
+    .comment-body { padding: 14px 16px; font-size: 14px; color: var(--muted); }
+    .comment-body code {
+      background: var(--bg3);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    /* ── Divider ── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="hero-badge">✨ v1.1.1 — Mới nhất</div>
+  <h1>AI Code Review<br/>cho GitLab MR</h1>
+  <p>Tự động review Merge Request bằng Claude Pro hoặc Codex — post comment thẳng lên GitLab, hỗ trợ inline comment trên từng dòng code.</p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="https://gitlab.kyanon.digital/shiva/tool/mr-reviewer" target="_blank">
+      📦 Xem source
+    </a>
+    <a class="btn btn-secondary" href="#setup">
+      ⚡ Cài đặt ngay
+    </a>
+  </div>
+</section>
+
+<!-- ── Terminal demo ── -->
+<div class="demo">
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+      <span class="terminal-title">PowerShell</span>
+    </div>
+    <div class="terminal-body">
+      <div><span class="t-prompt">❯</span> <span class="t-cmd">mr-review https://gitlab.kyanon.digital/RX3/FE/amaze-fe/-/merge_requests/5260</span></div>
+      <br/>
+      <div class="t-out">Chọn AI reviewer:</div>
+      <div class="t-success">❯ Claude (claude-opus-4-6)</div>
+      <div class="t-out">&nbsp; Codex (default model)</div>
+      <br/>
+      <div class="t-out">Chọn chế độ comment:</div>
+      <div class="t-out">&nbsp; 📝 Tổng quan  — 1 comment dạng summary</div>
+      <div class="t-success">❯ 📌 Inline + Tổng quan  — comment trực tiếp trên từng dòng code</div>
+      <br/>
+      <div><span class="t-success">✅</span> <span class="t-out">Review completed!</span></div>
+      <div><span class="t-out">📝 Posting summary comment...</span></div>
+      <div><span class="t-out">&nbsp;&nbsp; </span><span class="t-success">✅ Summary posted.</span></div>
+      <div><span class="t-out">📌 Posting 4 inline comment(s)...</span></div>
+      <div><span class="t-out">&nbsp;&nbsp; </span><span class="t-success">✅ [1/4] src/components/Store.tsx:221</span></div>
+      <div><span class="t-out">&nbsp;&nbsp; </span><span class="t-success">✅ [2/4] src/components/Store.tsx:345</span></div>
+      <br/>
+      <div><span class="t-success">✅ Review posted successfully!</span></div>
+      <div><span class="t-link">🔗 https://gitlab.kyanon.digital/RX3/FE/amaze-fe/-/merge_requests/5260</span></div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- ── Features ── -->
+<section class="section">
+  <h2 class="section-title">Tính năng</h2>
+  <p class="section-sub">Mọi thứ bạn cần để review code nhanh hơn</p>
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <h3>Hai AI provider</h3>
+      <p>Chọn <strong>Claude Pro</strong> (claude-opus-4-6) để review chuyên sâu, hoặc <strong>Codex</strong> miễn phí khi cần.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📌</div>
+      <h3>Inline comment</h3>
+      <p>Comment trực tiếp trên từng dòng code trong MR — không chỉ là tóm tắt chung chung.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🚨</div>
+      <h3>Phân loại severity</h3>
+      <p>Mỗi vấn đề được gắn mức <strong>Critical</strong>, <strong>Warning</strong>, hoặc <strong>Suggestion</strong> rõ ràng.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Không cần setup phức tạp</h3>
+      <p>Chạy lần đầu tự hỏi token, lưu config tự động. Lần sau chạy thẳng luôn.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌏</div>
+      <h3>Hỗ trợ Tiếng Việt</h3>
+      <p>AI tự nhận diện ngôn ngữ từ title/description MR và trả lời bằng ngôn ngữ phù hợp.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>Private & On-premise</h3>
+      <p>Kết nối trực tiếp với GitLab self-hosted nội bộ — không qua bên thứ ba.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ── Comment examples ── -->
+<section class="section">
+  <h2 class="section-title">Ví dụ comment trên MR</h2>
+  <p class="section-sub">AI phân tích diff và comment thẳng vào đúng dòng code có vấn đề</p>
+  <div class="comments">
+    <div class="comment-card">
+      <div class="comment-header">
+        <span class="badge badge-red">🚨 Critical</span>
+        <span>src/api/auth.ts · line 42</span>
+      </div>
+      <div class="comment-body">
+        Token được lưu trực tiếp vào <code>localStorage</code> mà không encrypt. Dễ bị XSS đánh cắp — nên dùng <code>httpOnly cookie</code> thay thế.
+      </div>
+    </div>
+    <div class="comment-card">
+      <div class="comment-header">
+        <span class="badge badge-orange">⚠️ Warning</span>
+        <span>src/hooks/useData.ts · line 87</span>
+      </div>
+      <div class="comment-body">
+        Missing dependency array trong <code>useEffect</code>. Sẽ chạy lại mỗi render, gây performance issue và có thể vòng lặp vô tận.
+      </div>
+    </div>
+    <div class="comment-card">
+      <div class="comment-header">
+        <span class="badge badge-blue">💡 Suggestion</span>
+        <span>src/utils/format.ts · line 15</span>
+      </div>
+      <div class="comment-body">
+        Hàm này được gọi nhiều lần với cùng input. Có thể dùng <code>useMemo</code> hoặc memoize để tránh tính toán lại không cần thiết.
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ── Setup ── -->
+<section class="section" id="setup">
+  <h2 class="section-title">Cài đặt</h2>
+  <p class="section-sub">Chỉ cần làm 1 lần duy nhất</p>
+  <div class="steps">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Tạo GitLab Personal Access Token</h3>
+        <p>Vào <a href="https://gitlab.kyanon.digital/-/user_settings/personal_access_tokens" target="_blank">GitLab → Access Tokens</a>, tạo token với scope <strong>api</strong>. Copy token (dạng <code>glpat-...</code>).</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Chạy setup script</h3>
+        <p><strong>macOS / Linux:</strong></p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          bash &lt;(curl -s https://gitlab.kyanon.digital/shiva/tool/mr-reviewer/-/raw/main/setup.sh)
+        </div>
+        <br/>
+        <p><strong>Windows (PowerShell):</strong></p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          powershell -ExecutionPolicy Bypass -Command "Invoke-WebRequest https://gitlab.kyanon.digital/shiva/tool/mr-reviewer/-/raw/main/setup.ps1 -OutFile $env:TEMP\setup.ps1; &amp; $env:TEMP\setup.ps1"
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Review MR đầu tiên</h3>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          mr-review https://gitlab.kyanon.digital/group/project/-/merge_requests/123
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<footer>
+  <p>Được xây dựng bởi team <strong>Shiva / Kyanon Digital</strong> &nbsp;·&nbsp;
+    <a href="https://gitlab.kyanon.digital/shiva/tool/mr-reviewer" target="_blank">GitLab</a>
+  </p>
+</footer>
+
+<script>
+  function copyCode(btn) {
+    const block = btn.parentElement;
+    const text = block.innerText.replace('Copy', '').trim();
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+</script>
+</body>
+</html>
