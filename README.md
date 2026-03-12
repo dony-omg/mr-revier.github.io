@@ -53,20 +53,20 @@ Cần thực hiện **1 lần duy nhất** để npm biết tải package từ G
 
 ```bash
 curl -s -H "PRIVATE-TOKEN: <your-gitlab-token>" \
-  "https://gitlab.kyanon.digital/api/v4/projects/shiva%2Ftool%2Fmr-reviewer/repository/files/setup.sh/raw?ref=main" \
+  "https://gitlab.kyanon.digital/api/v4/projects/kd-community%2Fmr-reviewer/repository/files/setup.sh/raw?ref=main" \
   -o /tmp/mr-setup.sh && bash /tmp/mr-setup.sh
 ```
 
 **Windows** — mở **PowerShell**:
 
 ```powershell
-$token="<your-gitlab-token>"; Invoke-WebRequest -Headers @{"PRIVATE-TOKEN"=$token} "https://gitlab.kyanon.digital/api/v4/projects/shiva%2Ftool%2Fmr-reviewer/repository/files/setup.ps1/raw?ref=main" -OutFile "$env:TEMP\setup.ps1"; & "$env:TEMP\setup.ps1"
+$token="<your-gitlab-token>"; Invoke-WebRequest -Headers @{"PRIVATE-TOKEN"=$token} "https://gitlab.kyanon.digital/api/v4/projects/kd-community%2Fmr-reviewer/repository/files/setup.ps1/raw?ref=main" -OutFile "$env:TEMP\setup.ps1"; & "$env:TEMP\setup.ps1"
 ```
 
 > ⚠️ Lưu ý: phải dùng URL dạng `/api/v4/projects/...` (không dùng URL web `/-/raw/main/...`)
 
 Script sẽ hỏi token vừa tạo, rồi tự động:
-- Cấu hình npm registry `@shiva` trong `~/.npmrc`
+- Cấu hình npm registry `@kd-community` trong `~/.npmrc`
 - Cài đặt `mr-review` command
 - Lưu token vào `~/.mr-reviewer/.env`
 
@@ -97,7 +97,7 @@ mr-review <gitlab-mr-url>
 Hoặc dùng `npx` (không cần cài đặt trước):
 
 ```bash
-npx @shiva/mr-reviewer <gitlab-mr-url>
+npx @kd-community/mr-reviewer <gitlab-mr-url>
 ```
 
 **Ví dụ:**
@@ -146,19 +146,19 @@ Tool sẽ tự động post comment lên GitLab MR:
 
 Nếu dùng `mr-review` (global install):
 ```bash
-npm install -g @shiva/mr-reviewer@latest
+npm install -g @kd-community/mr-reviewer@latest
 ```
 
 Nếu dùng `npx`, tool **tự động dùng version mới nhất** mỗi lần chạy. Để force xóa cache:
 ```bash
-npx --yes @shiva/mr-reviewer@latest <mr-url>
+npx --yes @kd-community/mr-reviewer@latest <mr-url>
 ```
 
 ---
 
 ## ❓ Troubleshooting
 
-### Lỗi "npm ERR! 404 Not Found — @shiva/mr-reviewer"
+### Lỗi "npm ERR! 404 Not Found — @kd-community/mr-reviewer"
 → Registry chưa được cấu hình. Chạy lại setup script (Bước 2).
 
 ### Lỗi "401 Unauthorized" khi install hoặc post comment
