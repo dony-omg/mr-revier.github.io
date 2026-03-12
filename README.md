@@ -4,6 +4,31 @@ Tool tự động review Merge Request bằng **Claude Pro** hoặc **Codex**, p
 
 ---
 
+## 🧠 Tại sao dùng AI để review MR?
+
+### Vấn đề thực tế
+- **Review thủ công tốn thời gian**: Reviewer mất 15–30 phút mỗi MR chỉ để đọc diff, trong khi còn phải làm việc khác.
+- **Dễ bỏ sót lỗi**: Sau nhiều MR liên tiếp, sự tập trung giảm — bug nhỏ, security issue, hay logic sai lặt vặt hay bị bỏ qua.
+- **Feedback không nhất quán**: Mỗi người review theo style khác nhau, gây khó khăn cho người nhận.
+- **Bottleneck khi team lớn**: Ít senior reviewer phải duyệt nhiều MR → MR tồn đọng, release chậm.
+
+### Claude và Codex giải quyết điều đó như thế nào?
+
+| | Claude (claude-opus-4-6) | Codex |
+|---|---|---|
+| **Điểm mạnh** | Hiểu ngữ cảnh sâu, phân tích logic phức tạp, comment chi tiết | Nhanh, miễn phí, phù hợp MR nhỏ |
+| **Inline comment** | ✅ Có (chỉ đúng dòng code có vấn đề) | ❌ Chỉ tổng quan |
+| **Phân loại severity** | ✅ Critical / Warning / Suggestion | ✅ |
+| **Yêu cầu** | Claude Pro subscription | Cài Codex (miễn phí) |
+
+### Lợi ích cụ thể
+- **Tiết kiệm thời gian**: AI đọc toàn bộ diff trong vài giây, reviewer chỉ cần xem lại comment và quyết định.
+- **Không bỏ sót**: Phát hiện các lỗi thường gặp — missing error handling, potential NPE, security risk (XSS, SQL injection), logic sai điều kiện.
+- **Nhất quán**: Mọi MR đều được review theo cùng tiêu chí, không phụ thuộc vào mood của reviewer.
+- **Comment thẳng vào dòng code**: Với Claude, comment được post trực tiếp lên đúng dòng diff — reviewer và author dễ theo dõi hơn so với comment chung chung.
+
+---
+
 ## ⚡ Cài đặt nhanh (1 lần duy nhất)
 
 ### Bước 1 — Tạo GitLab Personal Access Token
@@ -27,14 +52,18 @@ Cần thực hiện **1 lần duy nhất** để npm biết tải package từ G
 **macOS / Linux** — mở Terminal:
 
 ```bash
-bash <(curl -s https://gitlab.kyanon.digital/shiva/tool/mr-reviewer/-/raw/main/setup.sh)
+curl -s -H "PRIVATE-TOKEN: <your-gitlab-token>" \
+  "https://gitlab.kyanon.digital/api/v4/projects/shiva%2Ftool%2Fmr-reviewer/repository/files/setup.sh/raw?ref=main" \
+  -o /tmp/mr-setup.sh && bash /tmp/mr-setup.sh
 ```
 
 **Windows** — mở **PowerShell**:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -Command "Invoke-WebRequest https://gitlab.kyanon.digital/shiva/tool/mr-reviewer/-/raw/main/setup.ps1 -OutFile $env:TEMP\setup.ps1; & $env:TEMP\setup.ps1"
+$token="<your-gitlab-token>"; Invoke-WebRequest -Headers @{"PRIVATE-TOKEN"=$token} "https://gitlab.kyanon.digital/api/v4/projects/shiva%2Ftool%2Fmr-reviewer/repository/files/setup.ps1/raw?ref=main" -OutFile "$env:TEMP\setup.ps1"; & "$env:TEMP\setup.ps1"
 ```
+
+> ⚠️ Lưu ý: phải dùng URL dạng `/api/v4/projects/...` (không dùng URL web `/-/raw/main/...`)
 
 Script sẽ hỏi token vừa tạo, rồi tự động:
 - Cấu hình npm registry `@shiva` trong `~/.npmrc`
@@ -45,13 +74,15 @@ Script sẽ hỏi token vừa tạo, rồi tự động:
 
 ---
 
-### Bước 3 — (Tùy chọn) Cài Claude Code để dùng Claude Pro
+### Bước 3 — (Tùy chọn) Cài AI provider
 
-Nếu bạn có **Claude Pro subscription**:
-
+**Claude Pro** (review chuyên sâu hơn):
 1. Tải Claude Code: **https://claude.ai/download**
 2. Đăng nhập bằng tài khoản Claude Pro
 3. Tool sẽ tự nhận diện và cho phép chọn Claude khi review
+
+**Codex** (miễn phí):
+- Windows: **https://developers.openai.com/codex/app/windows/**
 
 > Không có Claude Pro? Dùng **Codex** (miễn phí) vẫn hoạt động tốt.
 
